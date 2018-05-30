@@ -6,7 +6,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * @author Romain GALLIEN <romaingallien.rg@gmail.com>
  * @var array
  */
-$config['rabbitmq'] = array(
-    'host' => 'localhost',
-    'port' => 8282
+$config['ratchet_websocket'] = array(
+    'host' => '0.0.0.0',
+    'port' => 8282,
+    'verbose' => true
 );
