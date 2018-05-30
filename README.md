@@ -2,6 +2,8 @@
 
 > CodeIgniter library who allow you to make **powerfull applications** with realtime interactions by using Websocket technology and Ratchetphp ([Socketo.me](http://socketo.me))
 
+<center>Development and examples in progress ..</center>
+
 ## :books: Dependencies
 
 - PHP 5.4+
@@ -161,6 +163,25 @@ If you have something like that, everything is ok for you:
 You can try is by typing and sending something in each page (see cmd for more logs).
 
 ![Private_msg](https://user-images.githubusercontent.com/14097222/40725383-961c9fd2-6423-11e8-88eb-152fa583aa14.PNG)
+
+## :boom: Send messages with your php App !
+If you want to broadcast message with php script or something else you can use library like [textalk/websocket](https://github.com/Textalk/websocket-php) ***(who is included in my composer.json as required library)***
+
+> Note : The first message is mandatory and always here to reassign the user_id
+
+```php
+$client = new Client('ws://0.0.0.0:8282');
+
+$client->send(json_encode(array('user_id' => 1, 'message' => null)));
+$client->send(json_encode(array('user_id' => 1, 'message' => 'Super cool message to me!')));
+```
+## What about Docker :whale: ?
+
+Easy to start with this command (php 7.1 used)
+```sh
+docker run -ti -v C:\Users\my_user\path_to_my_project\:/app -p 8282:8282 -w /app php:7.1-cli sh -c "php index.php welcome index"
+```
+
 ## For more CodeIgniter libraries, give me a :beer::grin:
 
 ## :construction: To do
