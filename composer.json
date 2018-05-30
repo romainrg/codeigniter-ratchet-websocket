@@ -24,5 +24,8 @@
     },
     "extra": {
         "installer-name": "ratchet-websocket"
+    },
+    "support": {
+        "email": "romaingallien.rg@gmail.com"
     }
 }
