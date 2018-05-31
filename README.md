@@ -22,6 +22,10 @@ Or by adding following lines to your `composer.json` file :
     "romainrg/codeigniter-ratchet-websocket": "^1.0.0"
 },
 ```
+Don't forget to include your autoload to CI config file :
+```php
+$config['composer_autoload'] = FCPATH.'vendor/autoload.php';
+```
 ### :arrow_right: Step 2 : Create library config file in your project (Optional)
 
 You have to create in your CI config folder located in `./application/config/ratchet_websocket.php` or the library will take his own config file based on host `0.0.0.0:8282`
@@ -182,7 +186,8 @@ docker run -ti -v C:\Users\my_user\path_to_my_project\:/app -p 8282:8282 -w /app
 ## For more CodeIgniter libraries, give me a :beer::grin:
 
 ## :construction: To do
- - Auth with token
+ - Auth
+ - Origin check
  - WSS support
  - Add app routing fonctionnality
  - Websocket native library
