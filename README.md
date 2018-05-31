@@ -50,9 +50,9 @@ $config['ratchet_websocket'] = array(
 You can add the following lines direclty in your Controller file or your MY_Controller global file
 
 ```php
-$this->load->add_package_path(FCPATH.'vendor/romainrg/ratchet-websocket');
+$this->load->add_package_path(FCPATH.'vendor/romainrg/codeigniter-ratchet-websocket');
 $this->load->library('ratchet_websocket');
-$this->load->remove_package_path(FCPATH.'vendor/romainrg/ratchet-websocket');
+$this->load->remove_package_path(FCPATH.'vendor/romainrg/codeigniter-ratchet-websocket');
 ```
 
 ### You'r almost done :heavy_check_mark:
