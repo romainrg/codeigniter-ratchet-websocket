@@ -40,7 +40,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
  * @var array
  */
 $config['ratchet_websocket'] = array(
-    'host' => '0.0.0.0',  // Default host
+    'host' => '0.0.0.0',    // Default host
     'port' => 8282,         // Default port (be carrefull to set unused server port)
     'verbose' => true       // Better to se as false in production
 );
@@ -85,7 +85,7 @@ class User extends CI_Controller
 {
     public function index($user_id = null)
     {
-	    // We load the CI welcome page with some lines of Javascript
+	// We load the CI welcome page with some lines of Javascript
         $this->load->view('welcome_message', array('user_id' => $user_id));
     }
 }
