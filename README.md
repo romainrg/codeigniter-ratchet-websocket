@@ -24,7 +24,7 @@ Or by adding following lines to your `composer.json` file :
 ```
 ### :arrow_right: Step 2 : Create library config file in your project (Optional)
 
-You have to create in your CI config folder located in `./application/config/ratchet_websocket.php` or the library will take his own config file based on host `localhost:8282`
+You have to create in your CI config folder located in `./application/config/ratchet_websocket.php` or the library will take his own config file based on host `0.0.0.0:8282`
 
 ```php
 <?php
@@ -36,7 +36,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
  * @var array
  */
 $config['ratchet_websocket'] = array(
-    'host' => 'localhost',  // Default host
+    'host' => '0.0.0.0',  // Default host
     'port' => 8282,         // Default port (be carrefull to set unused server port)
     'verbose' => true       // Better to se as false in production
 );
