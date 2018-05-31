@@ -70,9 +70,9 @@ class Welcome extends CI_Controller
     public function index()
     {
         // Load package path
-        $this->load->add_package_path(FCPATH.'vendor/romainrg/ratchet-websocket');
+        $this->load->add_package_path(FCPATH.'vendor/romainrg/codeigniter-ratchet-websocket');
         $this->load->library('ratchet_websocket');
-        $this->load->remove_package_path(FCPATH.'vendor/romainrg/ratchet-websocket');
+        $this->load->remove_package_path(FCPATH.'vendor/romainrg/codeigniter-ratchet-websocket');
 
         // Run server
         $this->ratchet_websocket->run();
