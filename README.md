@@ -183,7 +183,7 @@ Easy to start with this command (php 7.1 used)
 docker run -ti -v C:\Users\my_user\path_to_my_project\:/app -p 8282:8282 -w /app php:7.1-cli sh -c "php index.php welcome index"
 ```
 
-## For more CodeIgniter libraries, give me a :beer::grin:
+## For more CodeIgniter libraries, give me a :beer::grin: [paypal.me/romaingallien](https://www.paypal.me/romaingallien)
 
 ## :construction: To do
  - Auth
