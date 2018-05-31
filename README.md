@@ -1,8 +1,5 @@
 # CodeIgniter Ratchet WebSocket Library
-
-> CodeIgniter library who allow you to make **powerfull applications** with realtime interactions by using Websocket technology and Ratchetphp ([Socketo.me](http://socketo.me))
-
-<center>Development and examples in progress ..</center>
+CodeIgniter library who allow you to make **powerfull applications** with realtime interactions by using Websocket technology and Ratchetphp ([Socketo.me](http://socketo.me))
 
 ## :books: Dependencies
 
