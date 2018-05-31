@@ -182,6 +182,7 @@ docker run -ti -v C:\Users\my_user\path_to_my_project\:/app -p 8282:8282 -w /app
 ## For more CodeIgniter libraries, give me a :beer::grin:
 
 ## :construction: To do
+ - Auth with token
  - WSS support
  - Add app routing fonctionnality
  - Websocket native library
