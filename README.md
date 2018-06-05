@@ -154,6 +154,7 @@ Open you'r command prompt then type the command bellow in you'r project folder :
 php index.php welcome index
 ```
 If you see the message the message bellow,  you are done (don't close your cmd) !
+
 ![First_launch.png](https://user-images.githubusercontent.com/14097222/40981263-d568413a-68da-11e8-9ab2-7b3f7224526e.PNG)
 #### :arrow_right: Test the App
 Open three pages of your project on following url with different IDs :
