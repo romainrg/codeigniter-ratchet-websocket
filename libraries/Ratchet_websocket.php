@@ -8,9 +8,6 @@ use Ratchet\WebSocket\WsServer;
 use Ratchet\ConnectionInterface;
 use Ratchet\MessageComponentInterface;
 
-// Super Global VAR
-global $verbose;
-
 /**
  * @package   CodeIgniter Ratchet WebSocket Library: Main class
  * @category  Libraries
@@ -29,22 +26,46 @@ class Ratchet_websocket
     private $CI;
 
     /**
+     * Default host var
+     * @var string
+     */
+    public $host = null;
+
+    /**
+     * Default host var
+     * @var string
+     */
+    public $port = null;
+
+    /**
+     * Default auth var
+     * @var bool
+     */
+    public $auth = false;
+
+    /**
+     * Default debug var
+     * @var bool
+     */
+    public $debug = false;
+
+    /**
+     * Auth callback informations
+     * @var array
+     */
+    public $callback = array();
+
+    /**
      * Config vars
      * @var array
      */
     protected $config = array();
 
     /**
-     * Default host var
-     * @var string
+     * Define allowed callbacks
+     * @var array
      */
-    protected $host = null;
-
-    /**
-     * Default host var
-     * @var string
-     */
-    protected $port = null;
+    protected $callback_type = array('auth', 'event');
 
     /**
      * Class Constructor
@@ -65,16 +86,21 @@ class Ratchet_websocket
         $this->config = (!empty($config)) ? $config : array();
 
         // Config file verification
-        (!empty($this->config)) or exit('The configuration file does not exist');
+        if (empty($this->config)) {
+            output('fatal', 'The configuration file does not exist');
+        }
 
-        // Assign HOST value to global class var
+        // Assign HOST value to class var
         $this->host = (!empty($this->config['ratchet_websocket']['host'])) ? $this->config['ratchet_websocket']['host'] : '';
 
-        // Assign PORT value to global class var
+        // Assign PORT value to class var
         $this->port = (!empty($this->config['ratchet_websocket']['port'])) ? $this->config['ratchet_websocket']['port'] : '';
 
-        // Assign VERBOSE value to super global var
-        $GLOBALS['verbose'] = (!empty($this->config['ratchet_websocket']['verbose'])) ? $this->config['ratchet_websocket']['verbose'] : false;
+        // Assign AUTH value to class var
+        $this->auth = (!empty($this->config['ratchet_websocket']['auth'] && $this->config['ratchet_websocket']['auth'])) ? true : false;
+
+        // Assign DEBUG value to class var
+        $this->debug = (!empty($this->config['ratchet_websocket']['debug'] && $this->config['ratchet_websocket']['debug'])) ? true : false;
     }
 
     /**
@@ -96,13 +122,31 @@ class Ratchet_websocket
             $this->host
         );
 
-        // Output
-        if ($GLOBALS['verbose']) {
-            echo 'Running server on host '.$this->host.':'.$this->port.PHP_EOL;
-        }
-
         // Run the socket connection !
         $server->run();
+    }
+
+    /**
+     * Define a callback to use auth or event callback
+     * @method set_callback
+     * @author Romain GALLIEN <romaingallien.rg@gmail.com>
+     * @param  array             $callback
+     * @return void
+     */
+    public function set_callback($type = null, array $callback = array())
+    {
+        // Check if we have an authorized callback given
+        if (!empty($type) && in_array($type, $this->callback_type)) {
+
+            // Verify if the method does really exists
+            if (is_callable($callback)) {
+
+                // Register callback as class var
+                $this->callback[$type] = $callback;
+            } else {
+                output('fatal', 'Method '.$callback[1].' is not defined');
+            }
+        }
     }
 }
 
@@ -124,14 +168,38 @@ class Server implements MessageComponentInterface
     protected $clients;
 
     /**
+    * List of subscribers (associative array)
+    * @var array
+    */
+    protected $subscribers = array();
+
+    /**
      * Class constructor
      * @method __construct
      * @author Romain GALLIEN <romaingallien.rg@gmail.com>
      */
     public function __construct()
     {
+        // Load the CI instance
+        $this->CI = & get_instance();
+
         // Initialize object as SplObjectStorage (see PHP doc)
-        $this->clients = new \SplObjectStorage;
+        $this->clients = new SplObjectStorage;
+
+        // // Check if auth is required
+        if ($this->CI->ratchet_websocket->auth && empty($this->CI->ratchet_websocket->callback['auth'])) {
+            output('fatal', 'Authentication callback is required, you must set it before run server, aborting..');
+        }
+
+        // Output
+        if ($this->CI->ratchet_websocket->debug) {
+            output('success', 'Running server on host '.$this->CI->ratchet_websocket->host.':'.$this->CI->ratchet_websocket->port);
+        }
+
+        // Output
+        if (!empty($this->CI->ratchet_websocket->callback['auth']) && $this->CI->ratchet_websocket->debug) {
+            output('success', 'Authentication activated');
+        }
     }
 
     /**
@@ -147,8 +215,8 @@ class Server implements MessageComponentInterface
         $this->clients->attach($connection);
 
         // Output
-        if ($GLOBALS['verbose']) {
-            echo 'New client connected as #'.$connection->resourceId.PHP_EOL;
+        if ($this->CI->ratchet_websocket->debug) {
+            output('info', 'New client connected as ('.$connection->resourceId.')');
         }
     }
 
@@ -181,16 +249,28 @@ class Server implements MessageComponentInterface
         // Here we have to reassign the client ressource ID, this will allow us to send message to specified client.
         if (!empty($datas->user_id) && $datas->user_id !== $client->resourceId) {
 
-            // Output
-            if ($GLOBALS['verbose']) {
-                echo 'Client #'.$client->resourceId.' reassigned as user #'.$datas->user_id.PHP_EOL;
+            // At this moment we have to check if we have authent callback defined
+            if (!empty($this->CI->ratchet_websocket->callback['auth']) && empty($client->subscriber_id)) {
+
+                // Call user personnal callback
+                $auth = call_user_func_array($this->CI->ratchet_websocket->callback['auth'], array($datas));
+
+                // Verify authentication
+                if (empty($auth) or !is_integer($auth)) {
+                    output('error', 'Client ('.$client->resourceId.') authentication failure');
+
+                    // Closing client connexion with error code "CLOSE_ABNORMAL"
+                    $client->close(1006);
+                }
+
+                // Add UID to associative array of subscribers
+                $client->subscriber_id = $auth;
+
+                // Output
+                if ($this->CI->ratchet_websocket->debug) {
+                    output('success', 'Client ('.$client->resourceId.') authentication success');
+                }
             }
-
-            // Asign the new #
-            $client->resourceId = $datas->user_id;
-
-            // That's all we can stop here
-            return true;
         }
 
         // Now this is the management of messages destinations, at this moment, 4 possibilities :
@@ -198,36 +278,25 @@ class Server implements MessageComponentInterface
         // 2 - Message is an array and have destination (broadcast to single user)
         // 3 - Message is an array and don't have specified destination (broadcast to everybody except us)
         // 4 - Message is an array and we wan't to broadcast to ourselves too (broadcast to everybody)
-        foreach ($this->clients as $user) {
+        if (!empty($message)) {
 
-            // Broadcast to single user
-            if (!empty($datas->recipient_id)) {
-                if ($user->resourceId == $datas->recipient_id) {
-                    $user->send($message);
+            // We look arround all clients
+            foreach ($this->clients as $user) {
 
-                    // Output
-                    if ($GLOBALS['verbose']) {
-                        echo 'Client #'.$client->resourceId.' send "'.$datas->message.'" to #'.$user->resourceId.PHP_EOL;
-                    }
-                    break;
-                }
-            } else {
-                // Broadcast to everybody
-                if ($broadcast) {
-                    $user->send($message);
-
-                    // Output
-                    if ($GLOBALS['verbose']) {
-                        echo 'Client #'.$client->resourceId.' send "'.$datas->message.'" to #'.$user->resourceId.PHP_EOL;
+                // Broadcast to single user
+                if (!empty($datas->recipient_id)) {
+                    if ($user->subscriber_id == $datas->recipient_id) {
+                        $this->send_message($user, $message, $client);
+                        break;
                     }
                 } else {
-                    // Broadcast to everybody except us
-                    if ($client !== $user) {
-                        $user->send($message);
-
-                        // Output
-                        if ($GLOBALS['verbose']) {
-                            echo 'Client #'.$client->resourceId.' send "'.$datas->message.'" to #'.$user->resourceId.PHP_EOL;
+                    // Broadcast to everybody
+                    if ($broadcast) {
+                        $this->send_message($user, $message, $client);
+                    } else {
+                        // Broadcast to everybody except us
+                        if ($client !== $user) {
+                            $this->send_message($user, $message, $client);
                         }
                     }
                 }
@@ -245,8 +314,8 @@ class Server implements MessageComponentInterface
     public function onClose(ConnectionInterface $connection)
     {
         // Output
-        if ($GLOBALS['verbose']) {
-            echo 'Client '.$connection->resourceId.' disconnected'.PHP_EOL;
+        if ($this->CI->ratchet_websocket->debug) {
+            output('info', 'Client ('.$connection->resourceId.') disconnected');
         }
 
         // Detach client from SplObjectStorage
@@ -264,11 +333,43 @@ class Server implements MessageComponentInterface
     public function onError(ConnectionInterface $connection, \Exception $e)
     {
         // Output
-        if ($GLOBALS['verbose']) {
-            echo 'An error has occurred: '.$e->getMessage().PHP_EOL;
+        if ($this->CI->ratchet_websocket->debug) {
+            output('fatal', 'An error has occurred: '.$e->getMessage());
         }
 
         // We close this connection
         $connection->close();
+    }
+
+    /**
+     * Function to send the message
+     * @method send_message
+     * @author Romain GALLIEN <romaingallien.rg@gmail.com>
+     * @param  array        $user    User to send
+     * @param  array        $message Message
+     * @param  array        $client  Sender
+     * @return string
+     */
+    protected function send_message($user = array(), $message = array(), $client = array())
+    {
+        // Send the message
+        $user->send($message);
+
+        // We have to check if event callback must be called
+        if (!empty($this->CI->ratchet_websocket->callback['event'])) {
+
+            // At this moment we have to check if we have authent callback defined
+            call_user_func_array($this->CI->ratchet_websocket->callback['event'], array($user, $message, $client));
+
+            // Output
+            if ($this->CI->ratchet_websocket->debug) {
+                output('info', 'Callback event "'.$this->CI->ratchet_websocket->callback['event'][1].'" called');
+            }
+        }
+
+        // Output
+        if ($this->CI->ratchet_websocket->debug) {
+            output('info', 'Client ('.$client->resourceId.') send \''.$message.'\' to ('.$user->resourceId.')');
+        }
     }
 }

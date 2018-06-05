@@ -9,5 +9,6 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 $config['ratchet_websocket'] = array(
     'host' => '0.0.0.0',
     'port' => 8282,
-    'verbose' => true
+    'auth' => true,
+    'debug' => true
 );
