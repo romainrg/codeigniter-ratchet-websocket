@@ -42,7 +42,8 @@ defined('BASEPATH') or exit('No direct script access allowed');
 $config['ratchet_websocket'] = array(
     'host' => '0.0.0.0',    // Default host
     'port' => 8282,         // Default port (be carrefull to set unused server port)
-    'verbose' => true       // Better to se as false in production
+    'auth' => true,         // If authentication is mandatory
+    'debug' => true         // Better to set as false in Production
 );
 ```
 ### :arrow_right: Step 3 : Loading the library
@@ -129,7 +130,9 @@ class User extends CI_Controller
 
     conn.onmessage = function(e) {
         var data = JSON.parse(e.data);
-        $('#messages').append(data.user_id + ' : ' + data.message + '<br>');
+        if (data.message) {
+            $('#messages').append(data.user_id + ' : ' + data.message + '<br>');
+        }
     };
 
     $('#submit').click(function() {
@@ -150,12 +153,15 @@ Open you'r command prompt then type the command bellow in you'r project folder :
 ```sh
 php index.php welcome index
 ```
-If you see the message `Running server on host 0.0.0.0:8282` you are done (don't close your cmd) !
+If you see the message the message bellow,  you are done (don't close your cmd) !
+![First_launch.png](https://user-images.githubusercontent.com/14097222/40981263-d568413a-68da-11e8-9ab2-7b3f7224526e.PNG)
 #### :arrow_right: Test the App
 Open three pages of your project on following url with different IDs :
 `http://localhost/myproject/user/index/204`
 `http://localhost/myproject/user/index/402`
 `http://localhost/myproject/user/index/604`
+
+:heavy_exclamation_mark: In my example, **recipient_id** is defined by **user_id**, as you can see, it's the **auth callback** who defines recipient ids.
 
 If you have something like that, everything is ok for you:
 
@@ -163,33 +169,71 @@ If you have something like that, everything is ok for you:
 
 You can try is by typing and sending something in each page (see cmd for more logs).
 
-![Private_msg](https://user-images.githubusercontent.com/14097222/40725383-961c9fd2-6423-11e8-88eb-152fa583aa14.PNG)
+![Cmd_list.png](https://user-images.githubusercontent.com/14097222/40981966-819da07a-68dc-11e8-9717-b0135a107318.PNG)
 
-## :boom: Send messages with your php App !
+## Broadcast messages with your php App :boom: !
 If you want to broadcast message with php script or something else you can use library like [textalk/websocket](https://github.com/Textalk/websocket-php) ***(who is included in my composer.json as required library)***
 
-> Note : The first message is mandatory and always here to reassign the user_id
+> *Note : The first message is mandatory and always here to perform authentication*
 
 ```php
 $client = new Client('ws://0.0.0.0:8282');
 
 $client->send(json_encode(array('user_id' => 1, 'message' => null)));
-$client->send(json_encode(array('user_id' => 1, 'message' => 'Super cool message to me!')));
+$client->send(json_encode(array('user_id' => 1, 'message' => 'Super cool message to myself!')));
 ```
+## Authentication & callbacks :recycle:
+The library allow you to define some callbacks, here's an example :
+```php
+class Welcome extends CI_Controller
+{
+    public function index()
+    {
+        // Load package path
+        $this->load->add_package_path(FCPATH.'vendor/romainrg/codeigniter-ratchet-websocket');
+        $this->load->library('ratchet_websocket');
+        $this->load->remove_package_path(FCPATH.'vendor/romainrg/codeigniter-ratchet-websocket');
+
+        // Run server
+        $this->ratchet_websocket->set_callback('auth', array($this, '_auth'));
+        $this->ratchet_websocket->set_callback('event', array($this, '_event'));
+        $this->ratchet_websocket->run();
+    }
+
+    public function _auth($datas = null)
+    {
+        // Here you can verify everything you want to perform user login.
+        // However, method must return integer (client ID) if auth succedeed and false if not.
+        return (!empty($datas->user_id)) ? $datas->user_id : false;
+    }
+
+    public function _event($datas = null)
+    {
+        // Here you can do everyting you want, each time message is received
+        echo 'Hey ! I\'m an EVENT callback'.PHP_EOL;
+    }
+}
+```
+
+ - **Auth** type callback is called at first message posted from client.
+ - **Event** type callback is called on every message posted.
+
 ## What about Docker :whale: ?
 
 Easy to start with this command (php 7.1 used)
 ```sh
 docker run -ti -v C:\Users\my_user\path_to_my_project\:/app -p 8282:8282 -w /app php:7.1-cli sh -c "php index.php welcome index"
 ```
+## Bugs :bug: or feature :muscle:
+Be free to open an issue or send pull request
 
-## For more CodeIgniter libraries, give me a :beer::grin: [paypal.me/romaingallien](https://www.paypal.me/romaingallien)
-
-## :construction: To do
- - Auth
+## To do :construction:
  - Origin check
  - WSS support
  - Add app routing fonctionnality
  - Websocket native library
+## For more CodeIgniter libraries, give me a :beer::grin:
+[> Beer road](https://www.paypal.me/romaingallien)
 
-## :lock: License [MIT License](http://opensource.org/licenses/MIT)
+## :lock: License
+[MIT License](http://opensource.org/licenses/MIT)

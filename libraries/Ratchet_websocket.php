@@ -359,7 +359,7 @@ class Server implements MessageComponentInterface
         if (!empty($this->CI->ratchet_websocket->callback['event'])) {
 
             // At this moment we have to check if we have authent callback defined
-            call_user_func_array($this->CI->ratchet_websocket->callback['event'], array($user, $message, $client));
+            call_user_func_array($this->CI->ratchet_websocket->callback['event'], array((valid_json($message) ? json_decode($message) : $message)));
 
             // Output
             if ($this->CI->ratchet_websocket->debug) {
