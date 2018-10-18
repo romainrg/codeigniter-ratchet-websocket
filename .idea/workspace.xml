@@ -1,15 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="9e1a23c8-00a3-466e-9967-7c44e2e1532c" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/config/jwt.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/helpers/authorization_helper.php" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/helpers/jwt_helper.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/config/ratchet_websocket.php" afterPath="$PROJECT_DIR$/config/ratchet_websocket.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/helpers/ratchet_websocket_helper.php" afterPath="$PROJECT_DIR$/helpers/ratchet_websocket_helper.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/libraries/Ratchet_websocket.php" afterPath="$PROJECT_DIR$/libraries/Ratchet_websocket.php" />
-    </list>
+    <list default="true" id="9e1a23c8-00a3-466e-9967-7c44e2e1532c" name="Default" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -165,12 +157,12 @@
       <option name="presentableId" value="Default" />
       <updated>1539836481641</updated>
       <workItem from="1539836483542" duration="250000" />
-      <workItem from="1539838524076" duration="1511000" />
+      <workItem from="1539838524076" duration="2110000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1761000" />
+    <option name="totallyTimeSpent" value="2360000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />

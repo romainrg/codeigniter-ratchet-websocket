@@ -118,7 +118,7 @@ class Ratchet_websocket
         $this->debug = (!empty($this->config['ratchet_websocket']['debug'] && $this->config['ratchet_websocket']['debug'])) ? true : false;
 
         // Assign Timer value to class var
-        $this->timer = (!empty($this->config['ratchet_websocket']['timer'] && $this->config['ratchet_websocket']['timer'])) ? true : false;
+        $this->timer = (!empty($this->config['ratchet_websocket']['timer_enabled'] && $this->config['ratchet_websocket']['timer_enabled'])) ? true : false;
 
         // Assign Timer Interval value to class var
         $this->timer_interval = (!empty($this->config['ratchet_websocket']['timer_interval'])) ? $this->config['ratchet_websocket']['timer_interval'] : 1;
