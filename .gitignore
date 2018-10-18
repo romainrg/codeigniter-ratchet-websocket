@@ -16,5 +16,7 @@ application/logs/*
 !application/logs/.htaccess
 /vendor/
 
+.idea
+
 #composer
 composer.lock
