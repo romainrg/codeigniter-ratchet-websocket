@@ -43,13 +43,6 @@ class Ratchet_websocket
      */
     public $auth = false;
 
-
-    /**
-     * Default Timer var
-     * @var bool
-     */
-    public $timer = false;
-
     /**
      * Default Timer Interval var
      * @var bool
@@ -78,7 +71,7 @@ class Ratchet_websocket
      * Define allowed callbacks
      * @var array
      */
-    protected $callback_type = array('auth', 'event', 'close', 'error', 'citimer');
+    protected $callback_type = array('auth', 'event', 'close', 'citimer', 'roomjoin', 'roomleave', 'roomchat');
 
     /**
      * Class Constructor
@@ -142,7 +135,6 @@ class Ratchet_websocket
             $this->port,
             $this->host
         );
-
 
         //If you want to use timer
         if ($this->timer != false) {
@@ -277,16 +269,6 @@ class Server implements MessageComponentInterface
             // If true, we have to decode it
             $datas = json_decode($message);
 
-            //After JSON validation You can ADD JWT validation
-            /*
-            if (valid_jwt($datas->jwt-token) != false) {
-                Valid Token
-            }
-            else {
-                 Invalid Token
-                $client->send(json_encode(array("type" => "error", "msg" => 'Invalid Token.')));
-            }
-            */
             // Once we decoded it, we check look for global broadcast
             $broadcast = (!empty($datas->broadcast) and $datas->broadcast == true) ? true : false;
 
@@ -295,25 +277,50 @@ class Server implements MessageComponentInterface
 
             // Here we have to reassign the client ressource ID, this will allow us to send message to specified client.
 
-            if (!empty($this->CI->ratchet_websocket->callback['auth'])) {
+            if (!empty($datas->type) && $datas->type == 'socket') {
 
-                // Call user personnal callback
-                $auth = call_user_func_array($this->CI->ratchet_websocket->callback['auth'],
-                    array($datas, $client));
-                // Verify authentication
-                if (empty($auth) or !is_integer($auth)) {
-                    output('error', 'Client (' . $client->resourceId . ') authentication failure');
-                    //Sending Error Message to the specific Client
-                    $client->send(json_encode(array("type" => "error", "msg" => 'Invalid ID or Password.')));
-                    // Closing client connexion with error code "CLOSE_ABNORMAL"
-                    $client->close(1006);
+                if (!empty($this->CI->ratchet_websocket->callback['auth'])) {
+
+                    // Call user personnal callback
+                    $auth = call_user_func_array($this->CI->ratchet_websocket->callback['auth'],
+                        array($datas, $client));
+
+                    // Verify authentication
+                    if (empty($auth) or $auth['status'] != 1) {
+                        output('error', 'Client (' . $client->resourceId . ') authentication failure');
+                        $client->send(json_encode(array("type" => "error", "msg" => 'Invalid ID or Password.')));
+                        // Closing client connexion with error code "CLOSE_ABNORMAL"
+                        $client->close(1006);
+                    } else {
+
+                        $client->send(json_encode(array("type" => "error", "msg" => $auth['msg'])));
+                    }
+
+                    // Add UID to associative array of subscribers
+                    $client->subscriber_id = $auth;
+
+                    $client->username = $datas->user_id;
                 }
-                // Add UID to associative array of subscribers
-                $client->subscriber_id = $auth;
 
-                // Output
-                if ($this->CI->ratchet_websocket->debug) {
-                    output('success', 'Client (' . $client->resourceId . ') authentication success');
+            }
+
+
+            if (!empty($datas->type) && $datas->type == 'roomjoin') {
+
+                if (valid_jwt($datas->token) != false) {
+
+                    if (!empty($this->CI->ratchet_websocket->callback['roomjoin'])) {
+
+                        // Call user personnal callback
+                        call_user_func_array($this->CI->ratchet_websocket->callback['roomjoin'],
+                            array($datas, $client));
+
+                    }
+
+
+                } else {
+
+                    $client->send(json_encode(array("type" => "error", "msg" => 'Invalid Token.')));
                 }
 
             }
@@ -392,9 +399,6 @@ class Server implements MessageComponentInterface
             output('fatal', 'An error has occurred: ' . $e->getMessage());
         }
 
-        if (!empty($this->CI->ratchet_websocket->callback['error'])) {
-            call_user_func_array($this->CI->ratchet_websocket->callback['error'], array($connection));
-        }
         // We close this connection
         $connection->close();
     }
