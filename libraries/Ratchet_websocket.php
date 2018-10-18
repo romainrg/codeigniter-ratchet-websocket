@@ -325,6 +325,48 @@ class Server implements MessageComponentInterface
 
             }
 
+            if (!empty($datas->type) && $datas->type == 'roomleave') {
+
+                if (valid_jwt($datas->token) != false) {
+
+                    if (!empty($this->CI->ratchet_websocket->callback['roomleave'])) {
+
+                        // Call user personnal callback
+                        call_user_func_array($this->CI->ratchet_websocket->callback['roomleave'],
+                            array($datas, $client));
+
+                    }
+
+
+                } else {
+
+                    $client->send(json_encode(array("type" => "error", "msg" => 'Invalid Token.')));
+                }
+
+            }
+
+
+            if (!empty($datas->type) && $datas->type == 'roomchat') {
+
+                if (valid_jwt($datas->token) != false) {
+
+                    if (!empty($this->CI->ratchet_websocket->callback['roomchat'])) {
+
+                        // Call user personnal callback
+                        call_user_func_array($this->CI->ratchet_websocket->callback['roomchat'],
+                            array($datas, $client));
+
+                    }
+
+
+                } else {
+
+                    $client->send(json_encode(array("type" => "error", "msg" => 'Invalid Token.')));
+                }
+
+            }
+
+
             // Now this is the management of messages destinations, at this moment, 4 possibilities :
             // 1 - Message is not an array OR message has no destination (broadcast to everybody except us)
             // 2 - Message is an array and have destination (broadcast to single user)
